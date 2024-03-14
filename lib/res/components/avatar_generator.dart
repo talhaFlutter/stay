@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AvatarCreationScreen extends StatefulWidget {
   @override
@@ -14,37 +14,58 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
 
   String currentProperty = 'Face'; // Initially selected property
   String currentSubProperty = 'Hair'; // Initially selected sub-property
-  String currentAsset = 'nose_asset_1.png'; // Initially selected asset for Nose
+  dynamic currentAsset =
+      Colors.black; // Initially selected asset for Hair Color
 
   // List to store selected assets for all combinations
-  List<List<String>> selectedAssets = [];
+  List<List<dynamic>> selectedAssets = [];
   List<List<String>> selectedItems = [];
   // Map of available sub-properties for each property
   final Map<String, List<String>> subProperties = {
-    'Face': ['Hair', 'Nose', 'Eyes'],
-    'Hairs': ['Hats', 'Eyebrow', 'Beared'],
+    'Face': [
+      'Hair',
+      'Hair Color',
+      'Nose',
+      'Eyes'
+    ], // Added 'Hair Color' as a sub-property
+    'Clothe': ['Hats', 'Eyebrow', 'Beared'],
   };
 
-  // Map of available assets for each sub-property
-  final Map<String, Map<String, List<String>>> propertyAssets = {
+  final Map<String, Map<String, List<dynamic>>> propertyAssets = {
     'Hair': {
       'HairStyle': [
         'assets/hairStyle/bun.svg',
         'assets/hairStyle/short.svg',
       ],
     },
+    'Hair Color': {
+      'HairColor': [
+        Colors.black,
+        Colors.brown,
+        Colors.grey,
+      ],
+    },
     'Eyebrow': {
       'Eyebrowstyle': [
         'assets/Eyebrow/arched.svg',
         'assets/Eyebrow/beans.svg',
-      ]
+      ],
     },
     'Nose': {
       'NoseShape': [
         'assets/nose/crooked.svg',
         'assets/nose/long.svg',
-        'assets/nose/normal.svg'
-      ]
+        'assets/nose/normal.svg',
+      ],
+    },
+    'Eyes': {
+      'EyeColor': ['assets/Eyes/arched.svg'],
+    },
+    'Hats': {
+      'HatsDesign': [
+        'assets/Hats/hijab.svg',
+        'assets/Hats/kippa.svg',
+      ],
     },
     'Beared': {
       'Bearedstyle': ['assets/Beard/beard.svg', 'assets/Beard/fullbeard.svg']
@@ -53,9 +74,10 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
       'EyeColor': ['assets/Eyes/arched.svg']
     },
     'Hats': {
-      'HatsDesign': ['assets/Hats/hijab.svg', 'assets/Hats/ippa.svg']
+      'HatsDesign': ['assets/Hats/hijab.svg', 'assets/Hats/kippa.svg']
     },
   };
+  Color selectedHairColor = Colors.black; // Initialize with default color
 
   @override
   void dispose() {
@@ -68,10 +90,22 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
   @override
   void initState() {
     super.initState();
-    _propertyTabController =
-        TabController(length: subProperties.length, vsync: this);
+    _propertyTabController = TabController(
+      length: subProperties.keys.length, // Adjusted length here
+      vsync: this,
+    );
+
+    // Ensure that currentProperty is initialized to a valid key
+    currentProperty = subProperties.keys.first;
+
     _subPropertyTabController = TabController(
-        length: subProperties[currentProperty]!.length, vsync: this);
+      length: subProperties[currentProperty]!.length, // Adjusted length here
+      vsync: this,
+    );
+
+    // Ensure that currentSubProperty is initialized to a valid sub-property
+    currentSubProperty = subProperties[currentProperty]!.first;
+
     _propertyTabController.addListener(_updateProperty);
     _subPropertyTabController.addListener(_updateSubProperty);
     _pageController = PageController(
@@ -84,10 +118,28 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
     setState(() {
       currentProperty =
           subProperties.keys.elementAt(_propertyTabController.index);
-      currentSubProperty = subProperties[currentProperty]![0];
-      currentAsset = propertyAssets[currentSubProperty]!.values.first.first;
-      _subPropertyTabController.index =
-          0; // Reset the index of the lower tab controller
+      if (currentProperty == 'Clothes') {
+        currentSubProperty = subProperties[currentProperty]!
+            .first; // Select the first sub-property for Clothes
+        _subPropertyTabController = TabController(
+          length: subProperties[currentProperty]!
+              .length, // Use length of Clothes sub-properties
+          vsync: this,
+        );
+        currentAsset = propertyAssets[currentProperty]!
+            .values
+            .first
+            .first; // Select the first asset for Clothes
+        _subPropertyTabController.index =
+            0; // Reset the index of subPropertyTabController
+      } else {
+        currentSubProperty = subProperties[currentProperty]!
+            .first; // Select the first sub-property for Face
+        currentAsset = propertyAssets[currentSubProperty]!
+            .values
+            .first
+            .first; // Select the first asset for Face
+      }
     });
   }
 
@@ -99,53 +151,21 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
     });
   }
 
-  // void _updateAssetByPage() {
-  //   setState(() {
-  //     final currentPage = _pageController.page!.round();
-  //     final assets = propertyAssets[currentSubProperty]!.values.first;
-  //     currentAsset = assets[currentPage];
-  //   });
-  // }
-
-  // void updateAsset(String asset) {
-  //   setState(() {
-  //     currentAsset = asset;
-  //     final assetIndex =
-  //         propertyAssets[currentSubProperty]!.values.first.indexOf(asset);
-  //     _pageController.animateToPage(
-  //       assetIndex,
-  //       duration: Duration(milliseconds: 500),
-  //       curve: Curves.easeInOut,
-  //     );
-  //     // Save the selected asset for the current combination
-  //     selectedAssets.add([currentProperty, currentSubProperty, asset]);
-  //   });
-  // }
-
-  void updateSelectedItems(String category, String selectedAsset) {
+  void updateSelectedItems(String category, dynamic selectedAsset) {
     // Check if there's already an entry for the category
     bool found = false;
     for (int i = 0; i < selectedItems.length; i++) {
       if (selectedItems[i][0] == category) {
-        selectedItems[i][1] = selectedAsset; // Replace existing selection
+        selectedItems[i][1] =
+            selectedAsset.toString(); // Replace existing selection
         found = true;
         break;
       }
     }
     if (!found) {
-      selectedItems.add([category, selectedAsset]); // Add new selection
+      selectedItems
+          .add([category, selectedAsset.toString()]); // Add new selection
     }
-  }
-
-  void _updateAssetByPage() {
-    setState(() {
-      final currentPage = _pageController.page!.round();
-      final assets = propertyAssets[currentSubProperty]![currentSubProperty];
-      if (assets != null && assets.isNotEmpty) {
-        currentAsset = assets[currentPage];
-        updateSelectedItems(currentSubProperty, currentAsset);
-      }
-    });
   }
 
   @override
@@ -205,6 +225,7 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
             ),
           ),
           // Lowest Scrolling Bar for Asset Selection
+          // Lowest Scrolling Bar for Asset Selection
           SizedBox(
             height: 100,
             child: PageView.builder(
@@ -234,17 +255,20 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(10),
+                      color:
+                          currentSubProperty == 'Hair Color' && asset is Color
+                              ? asset
+                              : null, // Display color box if HairColor
                     ),
-                    child: SvgPicture.asset(
-                      propertyAssets[currentSubProperty]!.values.first[index],
-                      width: MediaQuery.of(context).size.width * 0.25,
-                      fit: BoxFit.cover,
-                    ),
+                    child: currentSubProperty != 'Hair Color'
+                        ? _applyHairColorFilter(asset)
+                        : null, // Don't display SVG if HairColor
                   ),
                 );
               },
             ),
           ),
+
           // Save button
           ElevatedButton(
             onPressed: () {
@@ -256,5 +280,66 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
         ],
       ),
     );
+  }
+
+  Widget _applyHairColorFilter(String asset) {
+    if (currentProperty == 'Face' && currentSubProperty == 'Hair') {
+      return ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          selectedHairColor,
+          BlendMode.modulate,
+        ),
+        child: SvgPicture.asset(
+          asset,
+          width: MediaQuery.of(context).size.width * 0.25,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      return SvgPicture.asset(
+        asset,
+        width: MediaQuery.of(context).size.width * 0.25,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
+  void _updateSelectedHairColor(Color color) {
+    setState(() {
+      selectedHairColor = color;
+    });
+  }
+
+// Update the hair color when it changes
+  void _updateAssetByPage() {
+    setState(() {
+      final currentPage = _pageController.page!.round();
+      final assets = propertyAssets[currentSubProperty]!['$currentSubProperty'];
+      if (assets != null && assets.isNotEmpty) {
+        if (currentSubProperty == 'HairColor') {
+          selectedHairColor = assets[currentPage];
+          // Update the hair assets
+          _updateHairAssets(selectedHairColor);
+        } else {
+          currentAsset = assets[currentPage];
+          updateSelectedItems(currentSubProperty, currentAsset);
+        }
+      }
+    });
+  }
+
+// Update the hair assets with the new color
+  void _updateHairAssets(Color color) {
+    setState(() {
+      for (var subProp in subProperties[currentProperty]!) {
+        if (propertyAssets[subProp]!.containsKey('HairStyle')) {
+          propertyAssets[subProp]!['HairStyle']!.forEach((asset) {
+            // Assuming your hair assets are SVGs and support color change
+            // You may need to apply the selected color programmatically to your SVGs
+            // Here you can rebuild your UI with the updated hair color
+          });
+        }
+      }
+    });
   }
 }
