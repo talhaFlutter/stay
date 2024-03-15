@@ -22,14 +22,9 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
   List<List<String>> selectedItems = [];
   // Map of available sub-properties for each property
   final Map<String, List<String>> subProperties = {
-    'Part': ['Nose', 'Eyes', 'Skin'],
-    'Face': [
-      'Hair',
-      'Hair Color',
-      'Beared'
-    ], // Added 'Hair Color' as a sub-property
-    'Clothe': ['Hats', 'Glasses', 'Top'],
-    'Body': ['Beared', 'Eyebrow', 'Mouth'],
+    'Base': ['Skin', 'Skin Color', 'Hair', 'Hair Color'],
+    'Part': ['Nose', 'Eyes', 'Mouth', 'Beared'],
+    'Face': ['Hats', 'Glasses', 'Top', 'Eyebrow'],
   };
 
   final Map<String, Map<String, List<dynamic>>> propertyAssets = {
@@ -72,13 +67,16 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
       'Bearedstyle': ['assets/Beard/beard.svg', 'assets/Beard/fullbeard.svg']
     },
     'Mouth': {
-      'Mouthstyle': ['assets/Mouth/childish.svg', 'assets/Mouth/connfident.svg']
+      'Mouthstyle': ['assets/Mouth/childish.svg', 'assets/Mouth/confident.svg']
     },
     'Eyes': {
       'EyeColor': ['assets/Eyes/arched.svg']
     },
     'Hats': {
       'HatsDesign': ['assets/Hats/hijab.svg', 'assets/Hats/kippa.svg']
+    },
+    'Skin': {
+      'Skin': ['assets/Skin/skinf.svg', 'assets/Skin/skins.svg']
     },
     'Skin Color': {
       'SkinTone': [
@@ -89,14 +87,14 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
     },
     'Top': {
       'TopStyle': [
-        'assets/Top/tshirt.svg', // Example top styles
-        'assets/Top/sweater.svg',
+        'assets/Top/top.svg',
+        'assets/Top/topH.svg',
       ],
     },
     'Glasses': {
       'GlassesDesign': [
-        'assets/Glasses/Rectangle.svg', // Example glasses designs
-        'assets/Glasses/Round.svg',
+        'assets/Glasses/rectangle.svg',
+        'assets/Glasses/round.svg',
       ],
     },
   };
@@ -277,13 +275,14 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(10),
-                      color: currentSubProperty == 'Hair Color' ||
-                              currentSubProperty == 'Skin Color' &&
-                                  asset is Color
+                      color: (currentSubProperty == 'Hair Color' ||
+                                  currentSubProperty == 'Skin Color') &&
+                              asset is Color
                           ? asset
                           : null, // Display color box if HairColor
                     ),
-                    child: currentSubProperty != 'Hair Color'
+                    child: (currentSubProperty != 'Hair Color' &&
+                            currentSubProperty != 'Skin Color')
                         ? _applyHairColorFilter(asset)
                         : null, // Don't display SVG if HairColor
                   ),
@@ -356,11 +355,7 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
     setState(() {
       for (var subProp in subProperties[currentProperty]!) {
         if (propertyAssets[subProp]!.containsKey('HairStyle')) {
-          propertyAssets[subProp]!['HairStyle']!.forEach((asset) {
-            // Assuming your hair assets are SVGs and support color change
-            // You may need to apply the selected color programmatically to your SVGs
-            // Here you can rebuild your UI with the updated hair color
-          });
+          propertyAssets[subProp]!['HairStyle']!.forEach((asset) {});
         }
       }
     });
