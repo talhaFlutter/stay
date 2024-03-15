@@ -22,13 +22,14 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
   List<List<String>> selectedItems = [];
   // Map of available sub-properties for each property
   final Map<String, List<String>> subProperties = {
+    'Part': ['Nose', 'Eyes', 'Skin'],
     'Face': [
       'Hair',
       'Hair Color',
-      'Nose',
-      'Eyes'
+      'Beared'
     ], // Added 'Hair Color' as a sub-property
-    'Clothe': ['Hats', 'Eyebrow', 'Beared'],
+    'Clothe': ['Hats', 'Glasses', 'Top'],
+    'Body': ['Beared', 'Eyebrow', 'Mouth'],
   };
 
   final Map<String, Map<String, List<dynamic>>> propertyAssets = {
@@ -70,11 +71,33 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
     'Beared': {
       'Bearedstyle': ['assets/Beard/beard.svg', 'assets/Beard/fullbeard.svg']
     },
+    'Mouth': {
+      'Mouthstyle': ['assets/Mouth/childish.svg', 'assets/Mouth/connfident.svg']
+    },
     'Eyes': {
       'EyeColor': ['assets/Eyes/arched.svg']
     },
     'Hats': {
       'HatsDesign': ['assets/Hats/hijab.svg', 'assets/Hats/kippa.svg']
+    },
+    'Skin Color': {
+      'SkinTone': [
+        Colors.lightBlue, // Example skin tone colors
+        Colors.brown,
+        Colors.pink,
+      ],
+    },
+    'Top': {
+      'TopStyle': [
+        'assets/Top/tshirt.svg', // Example top styles
+        'assets/Top/sweater.svg',
+      ],
+    },
+    'Glasses': {
+      'GlassesDesign': [
+        'assets/Glasses/Rectangle.svg', // Example glasses designs
+        'assets/Glasses/Round.svg',
+      ],
     },
   };
   Color selectedHairColor = Colors.black; // Initialize with default color
@@ -225,7 +248,6 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
             ),
           ),
           // Lowest Scrolling Bar for Asset Selection
-          // Lowest Scrolling Bar for Asset Selection
           SizedBox(
             height: 100,
             child: PageView.builder(
@@ -255,10 +277,11 @@ class _AvatarCreationScreenState extends State<AvatarCreationScreen>
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(10),
-                      color:
-                          currentSubProperty == 'Hair Color' && asset is Color
-                              ? asset
-                              : null, // Display color box if HairColor
+                      color: currentSubProperty == 'Hair Color' ||
+                              currentSubProperty == 'Skin Color' &&
+                                  asset is Color
+                          ? asset
+                          : null, // Display color box if HairColor
                     ),
                     child: currentSubProperty != 'Hair Color'
                         ? _applyHairColorFilter(asset)
